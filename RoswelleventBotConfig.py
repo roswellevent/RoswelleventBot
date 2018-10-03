@@ -33,21 +33,21 @@ class BotConfig():
         return stock_set
 
     def addStockNo(self, m_stock_no):
-        stock_set = self.getStockNo(self.config)
+        stock_set = self.getStockNo()
         stock_set.add(m_stock_no)
-        self.writeConfigFile(self.config,stock_set)
+        self.writeConfigFile(stock_set)
 
     def removeStockNo(self, m_stock_no):
-        stock_set = self.getStockNo(self.config)
+        stock_set = self.getStockNo()
         if m_stock_no in stock_set:
             stock_set.remove(m_stock_no)
-            self.writeConfigFile(self.config,stock_set)
+            self.writeConfigFile(stock_set)
             return True
         else:
             return False
 
     def writeConfigFile(self,m_stock_set):
-        self.self.config['stock']['stock_no'] = ','.join(map(str,sorted(m_stock_set)))
+        self.config['stock']['stock_no'] = ','.join(map(str,sorted(m_stock_set)))
         with open(self.__CONFIG_FILE,'w+') as f:
             self.config.write(f)
 
