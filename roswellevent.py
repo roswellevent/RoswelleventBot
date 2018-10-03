@@ -11,7 +11,8 @@ import time
 from datetime import timedelta
 from wakeonlan import send_magic_packet
 from icalendar import Calendar, Event
-import configparser
+from RoswelleventBotConfig import BotConfig
+
 
 logger = logging.getLogger(__name__)
 keyboard = [
@@ -25,7 +26,6 @@ keyboard = [
             ]
            ]
 
-#stocks_no = {5, 939, 788, 1883}
 markup = InlineKeyboardMarkup(keyboard)
 
 def getBusStopInfo(p_route,p_bound,p_stop_seq):
@@ -150,8 +150,7 @@ def getHSItoMessage():
 
 
 def getStockInfotoMessage():
-    config = readConfigFile()
-    stocks_no = getStockNo(config)
+    stocks_no = config.getStockNo()
     o = ""
     for stock_no in stocks_no:
         j = getStockInfo(stock_no)
@@ -236,40 +235,10 @@ def TodayIsHoliday():
                 flag = True
     return flag
 
-def readConfigFile():
-    config = configparser.ConfigParser()
-    config.read(CONFIG_FILE)
-    return config
 
-def getStockNo(config):
-    stock_no = config['stock']['stock_no'].split(',') # type:list
-    stock_set = set(list(map(int, stock_no)))
-    return stock_set
-
-def addStockNo(config, m_stock_no):
-    stock_set = getStockNo(config)
-    stock_set.add(m_stock_no)
-    writeConfigFile(config,stock_set)
-
-
-def removeStockNo(config, m_stock_no):
-    stock_set = getStockNo(config)
-    if m_stock_no in stock_set:
-        stock_set.remove(m_stock_no)
-        writeConfigFile(config,stock_set)
-        return True
-    else:
-        return False
-
-
-def writeConfigFile(config,m_stock_set):
-    config['stock']['stock_no'] = ','.join(map(str,sorted(m_stock_set)))
-    with open(CONFIG_FILE,'w+') as f:
-        config.write(f)
 
 def stock_list(bot, update):
-    config = readConfigFile()
-    stocks_no = getStockNo(config)
+    stocks_no = config.getStockNo()
     o = "*Stock List*\n"
     o += "-------------------------------------\n"
     i = 0
@@ -284,10 +253,9 @@ def stock_add(bot, update, args):
         if arg.isdigit():
             out = getStockInfo(arg)
             if (out):
-                config = readConfigFile()
                 o = "已加入*{}*({})\n\n".format( out['nameChi'],arg)
                 bot.sendMessage(chat_id=update.message.chat_id, text=o,parse_mode=ParseMode.MARKDOWN)
-                addStockNo(config,int(arg))
+                config.addStockNo(int(arg))
             else:
                 o = "{} 不是有效股票號碼!!!".format(arg)
                 bot.sendMessage(chat_id=update.message.chat_id, text=o)
@@ -297,19 +265,18 @@ def stock_add(bot, update, args):
     return 0
 
 def stock_remove(bot, update, args):
-    config = readConfigFile()
     for arg in args:
-        if arg.isdigit() and removeStockNo(config,int(arg)):
+        if arg.isdigit() and config.removeStockNo(int(arg)):
             out = getStockInfo(arg)
             o = "已刪除*{}*({})\n\n".format(out['nameChi'], arg)
         else:
             o = "*{}*不在股票監測明單內".format(arg)
         bot.sendMessage(chat_id=update.message.chat_id, text=o, parse_mode=ParseMode.MARKDOWN)
 
-BOT_TOKEN = "670970203:AAGPtP0irhq8x3zQm2l7PUpl4CMsYTs1aXs"
-CONFIG_FILE = '/home/pi/scripts/config.ini'
-#CONFIG_FILE ='C:\\Users\\roswellevent\\PycharmProjects\\untitled\\config.ini'
-ROSWELLEVENT_ID ="644799442"
+config = BotConfig()
+BOT_TOKEN = config.getTelegramBotToken()
+ROSWELLEVENT_ID = config.getMyTelegramID()
+
 market_close_time = datetime.time(16, 0, 0)
 market_open_time = datetime.time(9, 30, 0)
 market_morning_session_close_time = datetime.time(13, 0, 0)
