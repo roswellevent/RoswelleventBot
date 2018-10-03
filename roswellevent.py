@@ -218,9 +218,9 @@ def callback_timer(bot, update, job_queue):
     bot.send_message(chat_id=update.message.chat_id, text="Timer On")
 	
 def WakeUp(bot, update):
-	MAC_ADDR = '10:C3:7B:A1:E9:B2'
-	send_magic_packet('ff.ff.ff.ff.ff.ff',MAC_ADDR)
-	update.message.reply_text('Wake Up PC.....', reply_markup=markup)
+    MAC_ADDR = '10:C3:7B:A1:E9:B2'
+    send_magic_packet('ff.ff.ff.ff.ff.ff',MAC_ADDR)
+    update.message.reply_text('Wake Up PC.....', reply_markup=markup)
 	
 def TodayIsHoliday():
     URL = "http://www.1823.gov.hk/common/ical/gc/tc.ics"
